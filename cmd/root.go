@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -22,7 +24,42 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello World!")
+		templates, err := utils.GetTemplates()
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		var questions = []*survey.Question{
+			{
+				Name:     "name",
+				Prompt:   &survey.Input{Message: "What is the name of the project?"},
+				Validate: survey.Required,
+			},
+			{
+				Name: "path",
+				Prompt: &survey.Input{
+					Message: "Where do you want to create the project?",
+					Default: ".",
+				},
+			},
+			{
+				Name: "template",
+				Prompt: &survey.Select{
+					Message: "What template do you want to use?",
+					Options: templates,
+				},
+			},
+		}
+
+		answers := struct {
+			Name string
+			Path string
+		}{}
+
+		survey.Ask(questions, &answers)
+
 	},
 }
 
