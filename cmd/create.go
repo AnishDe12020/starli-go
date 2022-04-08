@@ -5,9 +5,6 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
@@ -24,16 +21,15 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 
-	Run: createTemplate,
+	RunE: createTemplate,
 }
 
-func createTemplate(cmd *cobra.Command, args []string) {
+func createTemplate(cmd *cobra.Command, args []string) error {
 
 	templates, err := utils.GetTemplates()
 
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return utils.Error("Failed to get templates")
 	}
 
 	var questions = []*survey.Question{
@@ -65,6 +61,8 @@ func createTemplate(cmd *cobra.Command, args []string) {
 	}{}
 
 	survey.Ask(questions, &answers)
+
+	return nil
 }
 
 func init() {
