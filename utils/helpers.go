@@ -1,5 +1,7 @@
 package utils
 
+import "os"
+
 func Contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -7,4 +9,8 @@ func Contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func CurrentDirName() (string, error) {
+	return os.Getwd()
 }

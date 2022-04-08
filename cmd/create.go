@@ -62,11 +62,18 @@ func handleCreate(cmd *cobra.Command, args []string) error {
 
 func createProject(opts CreateOptions, templates []string) error {
 	if opts.Name == "" {
-		prompt := &survey.Input{
-			Message: "Name of the project",
+		currentDirName, err := utils.CurrentDirName()
+
+		if err != nil {
+			return utils.Error("Failed to get current directory name")
 		}
 
-		err := survey.AskOne(prompt, &opts.Name, nil)
+		prompt := &survey.Input{
+			Message: "Name of the project",
+			Default: currentDirName,
+		}
+
+		err = survey.AskOne(prompt, &opts.Name, survey.WithValidator(survey.Required))
 
 		if err != nil {
 			return utils.Error("Failed to get name")
@@ -78,7 +85,7 @@ func createProject(opts CreateOptions, templates []string) error {
 			Message: "Path to create the project",
 		}
 
-		err := survey.AskOne(prompt, &opts.Path, nil)
+		err := survey.AskOne(prompt, &opts.Path, survey.WithValidator(survey.Required))
 
 		if err != nil {
 			return utils.Error("Failed to get path")
@@ -91,7 +98,7 @@ func createProject(opts CreateOptions, templates []string) error {
 			Options: templates,
 		}
 
-		err := survey.AskOne(prompt, &opts.Template, nil)
+		err := survey.AskOne(prompt, &opts.Template, survey.WithValidator(survey.Required))
 
 		if err != nil {
 			return utils.Error("Failed to get template")
