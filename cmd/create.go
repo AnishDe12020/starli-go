@@ -5,6 +5,8 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
@@ -20,11 +22,26 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-
-	RunE: createTemplate,
+	Args: cobra.MaximumNArgs(2),
+	RunE: handleCreate,
 }
 
-func createTemplate(cmd *cobra.Command, args []string) error {
+type CreateOptions struct {
+	Name     string "json:name"
+	Path     string "json:path"
+	Template string "json:template"
+}
+
+var opts = CreateOptions{}
+
+func handleCreate(cmd *cobra.Command, args []string) error {
+	if len(args) > 0 {
+		opts.Name = args[0]
+	}
+
+	if len(args) > 1 {
+		opts.Path = args[1]
+	}
 
 	templates, err := utils.GetTemplates()
 
@@ -32,41 +49,66 @@ func createTemplate(cmd *cobra.Command, args []string) error {
 		return utils.Error("Failed to get templates")
 	}
 
-	var questions = []*survey.Question{
-		{
-			Name:     "name",
-			Prompt:   &survey.Input{Message: "What is the name of the project?"},
-			Validate: survey.Required,
-		},
-		{
-			Name: "path",
-			Prompt: &survey.Input{
-				Message: "Where do you want to create the project?",
-				Default: ".",
-			},
-		},
-		{
-			Name: "template",
-			Prompt: &survey.Select{
-				Message: "What template do you want to use?",
-				Options: templates,
-			},
-		},
+	if opts.Template != "" {
+		if utils.Contains(templates, opts.Template) {
+			return utils.Error("Template not found")
+		}
 	}
 
-	answers := struct {
-		Name     string
-		Path     string
-		Template string
-	}{}
+	err = createProject(opts, templates)
 
-	survey.Ask(questions, &answers)
+	return err
+}
+
+func createProject(opts CreateOptions, templates []string) error {
+	if opts.Name == "" {
+		prompt := &survey.Input{
+			Message: "Name of the project",
+		}
+
+		err := survey.AskOne(prompt, &opts.Name, nil)
+
+		if err != nil {
+			return utils.Error("Failed to get name")
+		}
+	}
+
+	if opts.Path == "" {
+		prompt := &survey.Input{
+			Message: "Path to create the project",
+		}
+
+		err := survey.AskOne(prompt, &opts.Path, nil)
+
+		if err != nil {
+			return utils.Error("Failed to get path")
+		}
+	}
+
+	if opts.Template == "" {
+		prompt := &survey.Select{
+			Message: "Template to use",
+			Options: templates,
+		}
+
+		err := survey.AskOne(prompt, &opts.Template, nil)
+
+		if err != nil {
+			return utils.Error("Failed to get template")
+		}
+	}
+
+	fmt.Println(opts)
 
 	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+
+	createCmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the project")
+	createCmd.Flags().StringVarP(&opts.Path, "path", "p", "", "Path to create the project")
+	createCmd.Flags().StringVarP(&opts.Template, "template", "t", "", "Template to use")
 
 	// Here you will define your flags and configuration settings.
 
