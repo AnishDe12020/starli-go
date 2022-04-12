@@ -124,7 +124,13 @@ func createProject(opts CreateOptions, templates []string) error {
 		}
 	}
 
-	fmt.Println(opts)
+	template, err := utils.GetTemplate(opts.Template)
+
+	if err != nil {
+		return utils.Error("Failed to get template")
+	}
+
+	fmt.Print(template)
 
 	return nil
 }

@@ -2,8 +2,10 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 )
 
 type SpecTemplate struct {
@@ -13,6 +15,7 @@ type SpecTemplate struct {
 
 type SpecTemplateStaticFiles struct {
 	Name    string "json:name"
+	Path    string "json:path"
 	Content string "json:content"
 }
 
@@ -43,4 +46,24 @@ func GetTemplates() ([]string, error) {
 	}
 
 	return templates, nil
+}
+
+func GetTemplate(name string) (SpecTemplate, error) {
+	var template SpecTemplate
+
+	templateData, err := ioutil.ReadFile("specs/templates/" + strings.ToLower(name) + "/starli.json")
+
+	if err != nil {
+		fmt.Println(err)
+		return template, err
+	}
+
+	err = json.Unmarshal(templateData, &template)
+
+	if err != nil {
+		fmt.Println(err)
+		return template, err
+	}
+
+	return template, nil
 }
