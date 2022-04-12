@@ -1,9 +1,0 @@
-{
-  "name": "Next.js",
-  "staticFiles": [
-    {
-      "name": "README.md",
-      "content": "# Next.js\n\n Generated with Starli"
-    }
-  ]
-}
