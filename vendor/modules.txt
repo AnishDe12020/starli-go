@@ -21,6 +21,12 @@ cloud.google.com/go/storage/internal/apiv2
 github.com/AlecAivazis/survey/v2
 github.com/AlecAivazis/survey/v2/core
 github.com/AlecAivazis/survey/v2/terminal
+# github.com/AnishDe12020/spintron v1.19.0
+## explicit; go 1.14
+github.com/AnishDe12020/spintron
+# github.com/defaltd/log-symbols v0.0.0-20180904225809-59f0737fbf0d
+## explicit
+github.com/defaltd/log-symbols
 # github.com/fatih/color v1.13.0
 ## explicit; go 1.13
 github.com/fatih/color
@@ -155,7 +161,6 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 ## explicit
-golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20220406155245-289d7a0edf71
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader

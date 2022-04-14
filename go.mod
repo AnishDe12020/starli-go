@@ -5,10 +5,10 @@ go 1.17
 require (
 	cloud.google.com/go/storage v1.22.0
 	github.com/AlecAivazis/survey/v2 v2.3.4
+	github.com/AnishDe12020/spintron v1.19.0
 	github.com/fatih/color v1.13.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.74.0
 )
 
@@ -16,6 +16,7 @@ require (
 	cloud.google.com/go v0.100.2 // indirect
 	cloud.google.com/go/compute v1.5.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
+	github.com/defaltd/log-symbols v0.0.0-20180904225809-59f0737fbf0d // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -39,6 +40,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220406155245-289d7a0edf71 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/AnishDe12020/spintron"
 	"google.golang.org/api/option"
 )
 
@@ -75,12 +76,19 @@ func GetTemplate(name string) (SpecTemplate, error) {
 	return template, nil
 }
 
-func CheckIfSpecsDirExists() (bool, error) {
+func CheckIfSpecsExists() (bool, error) {
 	userCacheDir, err := os.UserCacheDir()
 	if err != nil {
 		return false, err
 	}
 	starliSpecsDir := filepath.Join(userCacheDir, "starli", "specs")
+	specsEtagFile := filepath.Join(userCacheDir, "starli", "specs-etag.txt")
+
+	if _, err := os.Stat(specsEtagFile); errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
 
 	if _, err := os.Stat(starliSpecsDir); errors.Is(err, os.ErrNotExist) {
 		return false, nil
@@ -92,9 +100,13 @@ func CheckIfSpecsDirExists() (bool, error) {
 }
 
 func DownloadSpecsDir() error {
-	fmt.Println("Downloading specs...")
+	s := spintron.New(spintron.Options{
+		Text: "Downloading Starli specs...",
+	})
+	s.Start()
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
+		s.Fail("Failed to retrieve user cache directory")
 		return err
 	}
 
@@ -103,6 +115,7 @@ func DownloadSpecsDir() error {
 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(starliDirPath, os.ModePerm)
 		if err != nil {
+			s.Fail("Failed to create starli directory")
 			return err
 		}
 	}
@@ -111,6 +124,7 @@ func DownloadSpecsDir() error {
 
 	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
 	if err != nil {
+		s.Fail("Failed to initialize a Google Cloud Storage client")
 		return err
 	}
 	defer client.Close()
@@ -120,17 +134,97 @@ func DownloadSpecsDir() error {
 
 	rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
 	if err != nil {
+		s.Fail("Failed to download Starli specs")
 		return err
 	}
 	defer rc.Close()
 
 	err = Untar(starliDirPath, rc)
 	if err != nil {
+		s.Fail("Failed to untar Starli specs")
 		return err
 	}
 
-	fmt.Println("Specs downloaded.")
+	attrs, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").Attrs(ctx)
+	if err != nil {
+		s.Fail("Failed to get Starli specs attributes")
+		return err
+	}
+
+	os.WriteFile(filepath.Join(starliDirPath, "specs-etag.txt"), []byte(attrs.Etag), 0644)
+
+	s.Succeed("Specs downloaded")
 
 	return nil
 
+}
+
+func UpdateSpecs() error {
+	s := spintron.New(spintron.Options{
+		Text: "Updating Starli specs...",
+	})
+	s.Start()
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		s.Fail("Failed to retrieve user cache directory")
+		return err
+	}
+
+	starliDirPath := cacheDir + "/starli"
+
+	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(starliDirPath, os.ModePerm)
+		if err != nil {
+			s.Fail("Failed to create starli directory")
+			return err
+		}
+	}
+
+	ctx := context.Background()
+
+	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
+	if err != nil {
+		s.Fail("Failed to initialize a Google Cloud Storage client")
+		return err
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+	defer cancel()
+
+	attrs, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").Attrs(ctx)
+	if err != nil {
+		s.Fail("Failed to get Starli specs attributes")
+		return err
+	}
+
+	existingEtag, err := os.ReadFile(filepath.Join(starliDirPath, "specs-etag.txt"))
+	if err != nil {
+		s.Fail("Failed to read Starli specs etag")
+		return err
+	}
+
+	if string(existingEtag) == attrs.Etag {
+		s.Succeed("Specs up to date")
+		return nil
+	}
+
+	rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
+	if err != nil {
+		s.Fail("Failed to download Starli specs")
+		return err
+	}
+	defer rc.Close()
+
+	err = Untar(starliDirPath, rc)
+	if err != nil {
+		s.Fail("Failed to untar Starli specs")
+		return err
+	}
+
+	os.WriteFile(filepath.Join(starliDirPath, "specs-etag.txt"), []byte(attrs.Etag), 0644)
+
+	s.Succeed("Specs updated")
+
+	return nil
 }

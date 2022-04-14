@@ -27,13 +27,15 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI to generate boilerplace code for your project",
 	Long:  `Starli lets you generate boilerplace code for your project via interactive prompts. You are able to select different frameworks, add libraries and other tools like linters.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		specsDirExists, err := utils.CheckIfSpecsDirExists()
+		specsExists, err := utils.CheckIfSpecsExists()
 		if err != nil {
 			return err
 		}
 
-		if !specsDirExists {
+		if !specsExists {
 			utils.DownloadSpecsDir()
+		} else {
+			utils.UpdateSpecs()
 		}
 
 		// errs := new(errgroup.Group)
