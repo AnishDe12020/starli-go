@@ -5,6 +5,7 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -19,6 +20,25 @@ var rootCmd = &cobra.Command{
 	Use:   "starli",
 	Short: "A CLI to generate boilerplace code for your project",
 	Long:  `Starli lets you generate boilerplace code for your project via interactive prompts. You are able to select different frameworks, add libraries and other tools like linters.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		go func() {
+			cacheDir, err := os.UserCacheDir()
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+
+			starliDirPath := cacheDir + "/starli"
+
+			if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
+				err := os.Mkdir(starliDirPath, os.ModePerm)
+				if err != nil {
+					fmt.Println("Error:", err)
+				}
+			}
+
+		}()
+		return nil
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:,
 }
