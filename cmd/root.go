@@ -5,18 +5,18 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
-	"context"
-	"errors"
+	// "context"
+	// "errors"
 	"fmt"
 	"os"
-	"time"
+	// "time"
 
-	"cloud.google.com/go/storage"
+	// "cloud.google.com/go/storage"
 	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/api/option"
+	// "golang.org/x/sync/errgroup"
+	// "google.golang.org/api/option"
 )
 
 var cfgFile string
@@ -27,51 +27,60 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI to generate boilerplace code for your project",
 	Long:  `Starli lets you generate boilerplace code for your project via interactive prompts. You are able to select different frameworks, add libraries and other tools like linters.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		errs := new(errgroup.Group)
-
-		errs.Go(func() error {
-			cacheDir, err := os.UserCacheDir()
-			if err != nil {
-				return err
-			}
-
-			starliDirPath := cacheDir + "/starli"
-
-			if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
-				err := os.Mkdir(starliDirPath, os.ModePerm)
-				if err != nil {
-					return err
-				}
-			}
-
-			ctx := context.Background()
-
-			client, err := storage.NewClient(ctx, option.WithoutAuthentication())
-			if err != nil {
-				return err
-			}
-			defer client.Close()
-
-			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
-			defer cancel()
-
-			rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
-			if err != nil {
-				return err
-			}
-			defer rc.Close()
-
-			err = utils.Untar(starliDirPath, rc)
-			if err != nil {
-				return err
-			}
-			return nil
-
-		})
-
-		if err := errs.Wait(); err != nil {
+		specsDirExists, err := utils.CheckIfSpecsDirExists()
+		if err != nil {
 			return err
 		}
+
+		if !specsDirExists {
+			utils.DownloadSpecsDir()
+		}
+
+		// errs := new(errgroup.Group)
+
+		// errs.Go(func() error {
+		// 	cacheDir, err := os.UserCacheDir()
+		// 	if err != nil {
+		// 		return err
+		// 	}
+
+		// 	starliDirPath := cacheDir + "/starli"
+
+		// 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
+		// 		err := os.Mkdir(starliDirPath, os.ModePerm)
+		// 		if err != nil {
+		// 			return err
+		// 		}
+		// 	}
+
+		// 	ctx := context.Background()
+
+		// 	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	defer client.Close()
+
+		// 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+		// 	defer cancel()
+
+		// 	rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	defer rc.Close()
+
+		// 	err = utils.Untar(starliDirPath, rc)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	return nil
+
+		// })
+
+		// if err := errs.Wait(); err != nil {
+		// 	return err
+		// }
 
 		return nil
 	},
