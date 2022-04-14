@@ -5,12 +5,17 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/api/option"
 )
 
 var cfgFile string
@@ -34,6 +39,33 @@ var rootCmd = &cobra.Command{
 				if err != nil {
 					fmt.Println("Error:", err)
 				}
+			}
+
+			ctx := context.Background()
+
+			client, err := storage.NewClient(ctx, option.WithoutAuthentication())
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			defer client.Close()
+
+			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+			defer cancel()
+
+			rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			defer rc.Close()
+
+			data, err := ioutil.ReadAll(rc)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+
+			err = ioutil.WriteFile(starliDirPath+"/specs.tar", data, 0644)
+			if err != nil {
+				fmt.Println("Error:", err)
 			}
 
 		}()
