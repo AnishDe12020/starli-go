@@ -8,13 +8,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/api/option"
 )
 
@@ -26,10 +27,12 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI to generate boilerplace code for your project",
 	Long:  `Starli lets you generate boilerplace code for your project via interactive prompts. You are able to select different frameworks, add libraries and other tools like linters.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		go func() {
+		errs := new(errgroup.Group)
+
+		errs.Go(func() error {
 			cacheDir, err := os.UserCacheDir()
 			if err != nil {
-				fmt.Println("Error:", err)
+				return err
 			}
 
 			starliDirPath := cacheDir + "/starli"
@@ -37,7 +40,7 @@ var rootCmd = &cobra.Command{
 			if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
 				err := os.Mkdir(starliDirPath, os.ModePerm)
 				if err != nil {
-					fmt.Println("Error:", err)
+					return err
 				}
 			}
 
@@ -45,7 +48,7 @@ var rootCmd = &cobra.Command{
 
 			client, err := storage.NewClient(ctx, option.WithoutAuthentication())
 			if err != nil {
-				fmt.Println("Error:", err)
+				return err
 			}
 			defer client.Close()
 
@@ -54,21 +57,22 @@ var rootCmd = &cobra.Command{
 
 			rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
 			if err != nil {
-				fmt.Println("Error:", err)
+				return err
 			}
 			defer rc.Close()
 
-			data, err := ioutil.ReadAll(rc)
+			err = utils.Untar(starliDirPath, rc)
 			if err != nil {
-				fmt.Println("Error:", err)
+				return err
 			}
+			return nil
 
-			err = ioutil.WriteFile(starliDirPath+"/specs.tar", data, 0644)
-			if err != nil {
-				fmt.Println("Error:", err)
-			}
+		})
 
-		}()
+		if err := errs.Wait(); err != nil {
+			return err
+		}
+
 		return nil
 	},
 	// Uncomment the following line if your bare application
