@@ -5,20 +5,12 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
-	// "context"
-	// "errors"
 	"fmt"
 	"os"
-	"time"
 
-	// "time"
-
-	// "cloud.google.com/go/storage"
 	"github.com/AnishDe12020/starli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	// "golang.org/x/sync/errgroup"
-	// "google.golang.org/api/option"
 )
 
 var cfgFile string
