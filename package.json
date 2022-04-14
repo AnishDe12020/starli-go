@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "specs:upload": "ts-node ./scripts/upload-specs.ts",
-    "specs:upload-check": "git diff --quiet specs && git diff --staged --quiet specs || yarn specs:upload",
+    "specs:upload-check": "git diff --quiet HEAD^ HEAD specs || yarn specs:upload",
     "prepare": "husky install"
   },
   "devDependencies": {
