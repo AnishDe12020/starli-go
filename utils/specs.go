@@ -159,14 +159,18 @@ func DownloadSpecsDir() error {
 
 }
 
-func UpdateSpecs() error {
+func UpdateSpecs(isVerbose bool) error {
 	s := spintron.New(spintron.Options{
 		Text: "Updating Starli specs...",
 	})
-	s.Start()
+	if isVerbose {
+		s.Start()
+	}
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		s.Fail("Failed to retrieve user cache directory")
+		if isVerbose {
+			s.Fail("Failed to retrieve user cache directory")
+		}
 		return err
 	}
 
@@ -175,7 +179,9 @@ func UpdateSpecs() error {
 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(starliDirPath, os.ModePerm)
 		if err != nil {
-			s.Fail("Failed to create starli directory")
+			if isVerbose {
+				s.Fail("Failed to create starli directory")
+			}
 			return err
 		}
 	}
@@ -184,7 +190,9 @@ func UpdateSpecs() error {
 
 	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
 	if err != nil {
-		s.Fail("Failed to initialize a Google Cloud Storage client")
+		if isVerbose {
+			s.Fail("Failed to initialize a Google Cloud Storage client")
+		}
 		return err
 	}
 	defer client.Close()
@@ -194,37 +202,49 @@ func UpdateSpecs() error {
 
 	attrs, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").Attrs(ctx)
 	if err != nil {
-		s.Fail("Failed to get Starli specs attributes")
+		if isVerbose {
+			s.Fail("Failed to get Starli specs attributes")
+		}
 		return err
 	}
 
 	existingEtag, err := os.ReadFile(filepath.Join(starliDirPath, "specs-etag.txt"))
 	if err != nil {
-		s.Fail("Failed to read Starli specs etag")
+		if isVerbose {
+			s.Fail("Failed to read Starli specs etag")
+		}
 		return err
 	}
 
 	if string(existingEtag) == attrs.Etag {
-		s.Succeed("Specs up to date")
+		if isVerbose {
+			s.Succeed("Specs up to date")
+		}
 		return nil
 	}
 
 	rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
 	if err != nil {
-		s.Fail("Failed to download Starli specs")
+		if isVerbose {
+			s.Fail("Failed to download Starli specs")
+		}
 		return err
 	}
 	defer rc.Close()
 
 	err = Untar(starliDirPath, rc)
 	if err != nil {
-		s.Fail("Failed to untar Starli specs")
+		if isVerbose {
+			s.Fail("Failed to untar Starli specs")
+		}
 		return err
 	}
 
 	os.WriteFile(filepath.Join(starliDirPath, "specs-etag.txt"), []byte(attrs.Etag), 0644)
 
-	s.Succeed("Specs updated")
+	if isVerbose {
+		s.Succeed("Specs updated")
+	}
 
 	return nil
 }

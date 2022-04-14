@@ -9,6 +9,8 @@ import (
 	// "errors"
 	"fmt"
 	"os"
+	"time"
+
 	// "time"
 
 	// "cloud.google.com/go/storage"
@@ -35,54 +37,10 @@ var rootCmd = &cobra.Command{
 		if !specsExists {
 			utils.DownloadSpecsDir()
 		} else {
-			utils.UpdateSpecs()
+			go func() {
+				utils.UpdateSpecs(false)
+			}()
 		}
-
-		// errs := new(errgroup.Group)
-
-		// errs.Go(func() error {
-		// 	cacheDir, err := os.UserCacheDir()
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	starliDirPath := cacheDir + "/starli"
-
-		// 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
-		// 		err := os.Mkdir(starliDirPath, os.ModePerm)
-		// 		if err != nil {
-		// 			return err
-		// 		}
-		// 	}
-
-		// 	ctx := context.Background()
-
-		// 	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	defer client.Close()
-
-		// 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
-		// 	defer cancel()
-
-		// 	rc, err := client.Bucket("starli-cli.appspot.com").Object("specs.tar").NewReader(ctx)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	defer rc.Close()
-
-		// 	err = utils.Untar(starliDirPath, rc)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	return nil
-
-		// })
-
-		// if err := errs.Wait(); err != nil {
-		// 	return err
-		// }
 
 		return nil
 	},
