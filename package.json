@@ -1,0 +1,21 @@
+{
+  "name": "starli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:AnishDe12020/starli.git",
+  "author": "AnishDe12020 <63192115+AnishDe12020@users.noreply.github.com>",
+  "license": "MIT",
+  "scripts": {
+    "specs:upload": "ts-node ./scripts/upload-specs.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "ts-node": "^10.7.0",
+    "tslib": "^2.3.1",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "firebase-admin": "^10.0.2"
+  }
+}
