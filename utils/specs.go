@@ -77,12 +77,8 @@ func GetTemplate(name string) (SpecTemplate, error) {
 }
 
 func CheckIfSpecsExists() (bool, error) {
-	userCacheDir, err := os.UserCacheDir()
-	if err != nil {
-		return false, err
-	}
-	starliSpecsDir := filepath.Join(userCacheDir, "starli", "specs")
-	specsEtagFile := filepath.Join(userCacheDir, "starli", "specs-etag.txt")
+	starliSpecsDir := GetStarliSpecsCacheDir()
+	specsEtagFile := GetStarliSpecsEtagFile()
 
 	if _, err := os.Stat(specsEtagFile); errors.Is(err, os.ErrNotExist) {
 		return false, nil
@@ -104,13 +100,8 @@ func DownloadSpecsDir() error {
 		Text: "Downloading Starli specs...",
 	})
 	s.Start()
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		s.Fail("Failed to retrieve user cache directory")
-		return err
-	}
 
-	starliDirPath := cacheDir + "/starli"
+	starliDirPath := GetStarliCacheDir()
 
 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(starliDirPath, os.ModePerm)
@@ -151,7 +142,9 @@ func DownloadSpecsDir() error {
 		return err
 	}
 
-	os.WriteFile(filepath.Join(starliDirPath, "specs-etag.txt"), []byte(attrs.Etag), 0644)
+	starliSpecsEtagPath := GetStarliSpecsEtagFile()
+
+	os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
 
 	s.Succeed("Specs downloaded")
 
@@ -163,18 +156,12 @@ func UpdateSpecs(isVerbose bool) error {
 	s := spintron.New(spintron.Options{
 		Text: "Updating Starli specs...",
 	})
+
 	if isVerbose {
 		s.Start()
 	}
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		if isVerbose {
-			s.Fail("Failed to retrieve user cache directory")
-		}
-		return err
-	}
 
-	starliDirPath := cacheDir + "/starli"
+	starliDirPath := GetStarliCacheDir()
 
 	if _, err := os.Stat(starliDirPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(starliDirPath, os.ModePerm)
@@ -208,7 +195,9 @@ func UpdateSpecs(isVerbose bool) error {
 		return err
 	}
 
-	existingEtag, err := os.ReadFile(filepath.Join(starliDirPath, "specs-etag.txt"))
+	starliSpecsEtagPath := GetStarliSpecsEtagFile()
+
+	existingEtag, err := os.ReadFile(starliSpecsEtagPath)
 	if err != nil {
 		if isVerbose {
 			s.Fail("Failed to read Starli specs etag")
@@ -233,6 +222,7 @@ func UpdateSpecs(isVerbose bool) error {
 	defer rc.Close()
 
 	err = Untar(starliDirPath, rc)
+
 	if err != nil {
 		if isVerbose {
 			s.Fail("Failed to untar Starli specs")
@@ -240,7 +230,7 @@ func UpdateSpecs(isVerbose bool) error {
 		return err
 	}
 
-	os.WriteFile(filepath.Join(starliDirPath, "specs-etag.txt"), []byte(attrs.Etag), 0644)
+	os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
 
 	if isVerbose {
 		s.Succeed("Specs updated")
