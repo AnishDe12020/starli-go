@@ -144,7 +144,11 @@ func DownloadSpecsDir() error {
 
 	starliSpecsEtagPath := GetStarliSpecsEtagFile()
 
-	os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
+	err = os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
+	if err != nil {
+		s.Fail("Failed to write Starli specs etag")
+		return err
+	}
 
 	s.Succeed("Specs downloaded")
 
@@ -230,7 +234,13 @@ func UpdateSpecs(isVerbose bool) error {
 		return err
 	}
 
-	os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
+	err = os.WriteFile(starliSpecsEtagPath, []byte(attrs.Etag), 0644)
+	if err != nil {
+		if isVerbose {
+			s.Fail("Failed to write Starli specs etag")
+		}
+		return err
+	}
 
 	if isVerbose {
 		s.Succeed("Specs updated")

@@ -27,7 +27,10 @@ var rootCmd = &cobra.Command{
 		}
 
 		if !specsExists {
-			utils.DownloadSpecsDir()
+			err := utils.DownloadSpecsDir()
+			if err != nil {
+				return err
+			}
 		} else {
 			go func() {
 				utils.UpdateSpecs(false)
