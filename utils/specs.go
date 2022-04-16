@@ -248,3 +248,21 @@ func UpdateSpecs(isVerbose bool) error {
 
 	return nil
 }
+
+func DeleteSpecs() error {
+	starliDirPath := GetStarliCacheDir()
+
+	err := os.RemoveAll(starliDirPath)
+	if err != nil {
+		return err
+	}
+
+	starliSpecsEtagPath := GetStarliSpecsEtagFile()
+
+	err = os.Remove(starliSpecsEtagPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
