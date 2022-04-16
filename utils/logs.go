@@ -15,6 +15,10 @@ func Error(str string) error {
 	return fmt.Errorf(s)
 }
 
+func ErrorPrint(str string) {
+	fmt.Println(Error(str))
+}
+
 func Info(str string) {
 	color.Blue(str)
 }

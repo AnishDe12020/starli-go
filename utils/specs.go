@@ -250,10 +250,11 @@ func UpdateSpecs(isVerbose bool) error {
 }
 
 func DeleteSpecs() error {
-	starliDirPath := GetStarliCacheDir()
+	starliDirPath := GetStarliSpecsCacheDir()
 
 	err := os.RemoveAll(starliDirPath)
 	if err != nil {
+		ErrorPrint("Failed to delete Starli specs")
 		return err
 	}
 
@@ -261,8 +262,12 @@ func DeleteSpecs() error {
 
 	err = os.Remove(starliSpecsEtagPath)
 	if err != nil {
+		ErrorPrint("Failed to delete Starli specs etag")
+		fmt.Println(err)
 		return err
 	}
+
+	Success("Specs deleted")
 
 	return nil
 }
