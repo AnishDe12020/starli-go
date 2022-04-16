@@ -11,13 +11,8 @@ import (
 // specsCmd represents the specs command
 var specsCmd = &cobra.Command{
 	Use:   "specs",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Command for operations on Starli specs.",
+	Long:  `This is a parent command with subcommands to perform operations on Starli specs.`,
 }
 
 func init() {
