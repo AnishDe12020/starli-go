@@ -3,16 +3,17 @@ package utils
 import (
 	"fmt"
 
+	logsymbols "github.com/defaltd/log-symbols"
 	"github.com/fatih/color"
 )
 
 func Success(str string) {
-	color.Green(str)
+	fmt.Printf("%s %s\n", logsymbols.SUCCESS, color.GreenString(str))
 }
 
 func Error(str string) error {
 	s := color.RedString(str)
-	return fmt.Errorf(s)
+	return fmt.Errorf("%s %s", logsymbols.ERROR, s)
 }
 
 func ErrorPrint(str string) {
@@ -20,11 +21,11 @@ func ErrorPrint(str string) {
 }
 
 func Info(str string) {
-	color.Blue(str)
+	color.Cyan(str)
 }
 
 func Warning(str string) {
-	color.Yellow(str)
+	fmt.Printf("%s %s\n", logsymbols.WARNING, color.YellowString(str))
 }
 
 func Debug(str string) {
