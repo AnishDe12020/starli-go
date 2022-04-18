@@ -29,7 +29,8 @@ type SpecTemplateStaticFiles struct {
 
 func GetTemplates() ([]string, error) {
 	templates := []string{}
-	matches, err := filepath.Glob("specs/templates/**/starli.json")
+	starliSpecsDir := GetStarliSpecsCacheDir()
+	matches, err := filepath.Glob(starliSpecsDir + "/templates/**/starli.json")
 
 	if err != nil {
 		return nil, err
@@ -59,7 +60,9 @@ func GetTemplates() ([]string, error) {
 func GetTemplate(name string) (SpecTemplate, error) {
 	var template SpecTemplate
 
-	templateData, err := ioutil.ReadFile("specs/templates/" + strings.ToLower(name) + "/starli.json")
+	starliSpecsDir := GetStarliSpecsCacheDir()
+
+	templateData, err := ioutil.ReadFile(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/starli.json")
 
 	if err != nil {
 		fmt.Println(err)
