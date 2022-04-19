@@ -14,6 +14,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/AnishDe12020/spintron"
+	"github.com/yargevad/filepathx"
 	"google.golang.org/api/option"
 )
 
@@ -77,10 +78,10 @@ func GetTemplate(name string) (SpecTemplate, error) {
 		return template, err
 	}
 
-	matches, _ := filepath.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/*")
-	fmt.Println(matches)
+	matches, _ := filepathx.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/**/*.tmpl")
 
-	temp, err := tmpl.ParseGlob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/*.tmpl")
+	temp, err := tmpl.ParseFiles(matches...)
+	fmt.Println(temp.Templates())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -89,7 +90,10 @@ func GetTemplate(name string) (SpecTemplate, error) {
 		Test string
 	}
 
-	temp.Execute(os.Stdout, Test{Test: "frewf"})
+	for _, template := range temp.Templates() {
+		fmt.Println(template.Name())
+		template.Execute(os.Stdout, Test{Test: "frewf"})
+	}
 
 	return template, nil
 }
