@@ -9,7 +9,7 @@
     "specs:upload": "ts-node ./scripts/upload-specs.ts",
     "specs:upload-check": "git diff --quiet HEAD^ HEAD specs || yarn specs:upload",
     "prepare": "husky install",
-    "specs:dev": "cp -r specs/ ~/.cache/starli/specs"
+    "specs:dev": " rm -rf ~/.cache/starli/specs && cp -r specs/ ~/.cache/starli/specs"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",

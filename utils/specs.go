@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	tmpl "text/template"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -75,6 +76,20 @@ func GetTemplate(name string) (SpecTemplate, error) {
 		fmt.Println(err)
 		return template, err
 	}
+
+	matches, _ := filepath.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/*")
+	fmt.Println(matches)
+
+	temp, err := tmpl.ParseGlob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/*.tmpl")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	type Test struct {
+		Test string
+	}
+
+	temp.Execute(os.Stdout, Test{Test: "frewf"})
 
 	return template, nil
 }
