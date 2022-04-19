@@ -19,14 +19,14 @@ import (
 )
 
 type SpecTemplate struct {
-	Name        string                    "json:name"
-	StaticFiles []SpecTemplateStaticFiles "json:staticFiles"
+	Name        string                    `json:"name"`
+	StaticFiles []SpecTemplateStaticFiles `json:"static_files"`
 }
 
 type SpecTemplateStaticFiles struct {
-	Name    string "json:name"
-	Path    string "json:path"
-	Content string "json:content"
+	Name    string `json:"name"`
+	Path    string `json:"path"`
+	Content string `json:"content"`
 }
 
 func GetTemplates() ([]string, error) {
@@ -59,43 +59,18 @@ func GetTemplates() ([]string, error) {
 	return templates, nil
 }
 
-func GetTemplate(name string) (SpecTemplate, error) {
-	var template SpecTemplate
-
+func GetTemplate(name string) (*tmpl.Template, error) {
 	starliSpecsDir := GetStarliSpecsCacheDir()
-
-	templateData, err := ioutil.ReadFile(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/starli.json")
-
-	if err != nil {
-		fmt.Println(err)
-		return template, err
-	}
-
-	err = json.Unmarshal(templateData, &template)
-
-	if err != nil {
-		fmt.Println(err)
-		return template, err
-	}
 
 	matches, _ := filepathx.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/**/*.tmpl")
 
-	temp, err := tmpl.ParseFiles(matches...)
-	fmt.Println(temp.Templates())
+	templates, err := tmpl.ParseFiles(matches...)
+
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	type Test struct {
-		Test string
-	}
-
-	for _, template := range temp.Templates() {
-		fmt.Println(template.Name())
-		template.Execute(os.Stdout, Test{Test: "frewf"})
-	}
-
-	return template, nil
+	return templates, nil
 }
 
 func CheckIfSpecsExists() (bool, error) {
