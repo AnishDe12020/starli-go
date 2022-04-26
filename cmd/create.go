@@ -6,6 +6,9 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
+	"path/filepath"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AnishDe12020/starli/utils"
@@ -124,13 +127,72 @@ func createProject(opts CreateOptions, templates []string) error {
 		}
 	}
 
-	template, err := utils.GetTemplate(opts.Template)
+	starliSpecsDir := utils.GetStarliSpecsCacheDir()
+
+	filepath.WalkDir(starliSpecsDir+"/templates/"+strings.ToLower(opts.Template), func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		if strings.HasSuffix(path, ".tmpl") {
+			fmt.Print(path)
+			fmt.Print(" Is template file\n")
+		} else if strings.HasSuffix(path, "starli.json") {
+			fmt.Print(path)
+			fmt.Print(" Is starli config file")
+		} else {
+			fmt.Print(path)
+			fmt.Print(" Is file\n")
+		}
+
+		return nil
+	})
+
+	templateMeta, err := utils.GetTemplate(opts.Template)
+
+	for _, question := range templateMeta.Questions {
+		var answer string
+
+		prompt := &survey.Input{
+			Message: question.Message,
+			Default: question.Default,
+		}
+
+		err = survey.AskOne(prompt, &answer, survey.WithValidator(survey.Required))
+
+		if err != nil {
+			return utils.Error("Failed to get answer")
+		}
+
+	}
 
 	if err != nil {
 		return utils.Error("Failed to get template")
 	}
 
-	fmt.Print(template)
+	// templatesParsed, err := utils.GetTemplate(opts.Template)
+
+	// if err != nil {
+	// 	return utils.Error("Failed to get template")
+	// }
+
+	// type ExecuteOptions struct {
+	// 	Test string
+	// }
+
+	// execOpts := ExecuteOptions{
+	// 	Test: "value",
+	// }
+
+	// execOpts := map[string]string{
+	// 	"Test": "value",
+	// }
+
+	// for _, template := range templatesParsed.Templates() {
+	// 	// fmt.Println("Name: ", template.)
+	// 	fmt.Println("Value: ")
+	// 	template.Execute(os.Stdout, execOpts)
+	// }
 
 	return nil
 }

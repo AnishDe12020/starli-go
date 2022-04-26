@@ -9,21 +9,26 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	tmpl "text/template"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/AnishDe12020/spintron"
-	"github.com/yargevad/filepathx"
 	"google.golang.org/api/option"
 )
 
 type SpecTemplate struct {
-	Name        string                    `json:"name"`
-	StaticFiles []SpecTemplateStaticFiles `json:"static_files"`
+	Name        string                   `json:"name"`
+	StaticFiles []SpecTemplateStaticFile `json:"staticFiles"`
+	Questions   []SpecsTemplateQuestion  `json:"questions"`
 }
 
-type SpecTemplateStaticFiles struct {
+type SpecsTemplateQuestion struct {
+	Name    string `json:"name"`
+	Message string `json:"message"`
+	Default string `json:"default"`
+}
+
+type SpecTemplateStaticFile struct {
 	Name    string `json:"name"`
 	Path    string `json:"path"`
 	Content string `json:"content"`
@@ -59,18 +64,38 @@ func GetTemplates() ([]string, error) {
 	return templates, nil
 }
 
-func GetTemplate(name string) (*tmpl.Template, error) {
+// func GetTemplate(name string) (*tmpl.Template, error) {
+// 	starliSpecsDir := GetStarliSpecsCacheDir()
+
+// 	matches, _ := filepathx.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/**/*.tmpl")
+
+// 	templates, err := tmpl.ParseFiles(matches...)
+
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+
+// 	return templates, nil
+// }
+
+func GetTemplate(name string) (SpecTemplate, error) {
 	starliSpecsDir := GetStarliSpecsCacheDir()
-
-	matches, _ := filepathx.Glob(starliSpecsDir + "/templates/" + strings.ToLower(name) + "/**/*.tmpl")
-
-	templates, err := tmpl.ParseFiles(matches...)
+	// Get Starli.json file of template and return the json value
+	var template SpecTemplate
+	starliSpecsFile := starliSpecsDir + "/templates/" + strings.ToLower(name) + "/starli.json"
+	templateData, err := ioutil.ReadFile(starliSpecsFile)
 
 	if err != nil {
-		fmt.Println(err)
+		return template, err
 	}
 
-	return templates, nil
+	err = json.Unmarshal(templateData, &template)
+
+	if err != nil {
+		return template, err
+	}
+
+	return template, nil
 }
 
 func CheckIfSpecsExists() (bool, error) {

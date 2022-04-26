@@ -6,5 +6,12 @@
       "path": "/README.md",
       "content": "# Next.js\n\n Generated with Starli."
     }
+  ],
+  "questions": [
+    {
+      "name": "Test",
+      "message": "What is the value for Test?",
+      "default": "World"
+    }
   ]
 }
