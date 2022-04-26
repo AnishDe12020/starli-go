@@ -7,8 +7,10 @@ package cmd
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
+	tmpl "text/template"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AnishDe12020/starli/utils"
@@ -129,26 +131,13 @@ func createProject(opts CreateOptions, templates []string) error {
 
 	starliSpecsDir := utils.GetStarliSpecsCacheDir()
 
-	filepath.WalkDir(starliSpecsDir+"/templates/"+strings.ToLower(opts.Template), func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			return nil
-		}
-
-		if strings.HasSuffix(path, ".tmpl") {
-			fmt.Print(path)
-			fmt.Print(" Is template file\n")
-		} else if strings.HasSuffix(path, "starli.json") {
-			fmt.Print(path)
-			fmt.Print(" Is starli config file")
-		} else {
-			fmt.Print(path)
-			fmt.Print(" Is file\n")
-		}
-
-		return nil
-	})
-
 	templateMeta, err := utils.GetTemplate(opts.Template)
+
+	if err != nil {
+		return utils.Error("Failed to get template")
+	}
+
+	templateDynamicData := make(map[string]string)
 
 	for _, question := range templateMeta.Questions {
 		var answer string
@@ -164,11 +153,44 @@ func createProject(opts CreateOptions, templates []string) error {
 			return utils.Error("Failed to get answer")
 		}
 
+		templateDynamicData[question.Name] = answer
 	}
 
-	if err != nil {
-		return utils.Error("Failed to get template")
-	}
+	fmt.Println(templateDynamicData)
+
+	filepath.WalkDir(starliSpecsDir+"/templates/"+strings.ToLower(opts.Template), func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		if strings.HasSuffix(path, ".tmpl") {
+			fmt.Print(path)
+			fmt.Print(" Is template file\n")
+
+			// Get file content
+
+			fileContent, err := os.ReadFile(path)
+
+			if err != nil {
+				return utils.Error("Failed to read file")
+			}
+
+			parsedTemplate, err := tmpl.New(path).Parse(string(fileContent))
+			if err != nil {
+				return utils.Error("Failed to parse template")
+			}
+
+			parsedTemplate.Execute(os.Stdout, templateDynamicData)
+		} else if strings.HasSuffix(path, "starli.json") {
+			fmt.Print(path)
+			fmt.Print(" Is starli config file")
+		} else {
+			fmt.Print(path)
+			fmt.Print(" Is file\n")
+		}
+
+		return nil
+	})
 
 	// templatesParsed, err := utils.GetTemplate(opts.Template)
 
