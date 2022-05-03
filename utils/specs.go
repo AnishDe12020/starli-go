@@ -293,3 +293,21 @@ func DeleteSpecs() error {
 
 	return nil
 }
+
+func RemoveStarliSpecsConfigPathForFile(path string, template string) string {
+	starliSpecsDir := GetStarliSpecsCacheDir()
+	newPath := strings.Replace(path, starliSpecsDir+"/templates/"+strings.ToLower(template)+"/", "", 1)
+	fmt.Println(path)
+	fmt.Println(template)
+	fmt.Println(newPath)
+	return newPath
+}
+
+func RemoveStarliSpecsConfigPathForDir(path string, template string) string {
+	starliSpecsDir := GetStarliSpecsCacheDir()
+	newPath := strings.Replace(path, starliSpecsDir+"/templates/"+strings.ToLower(template), "", 1)
+	fmt.Println(path)
+	fmt.Println(template)
+	fmt.Println(newPath)
+	return newPath
+}

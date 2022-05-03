@@ -5,6 +5,7 @@ Copyright © 2022 Anish De contact@anishde.dev
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -160,7 +161,7 @@ func createProject(opts CreateOptions, templates []string) error {
 
 	filepath.WalkDir(starliSpecsDir+"/templates/"+strings.ToLower(opts.Template), func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
-			return nil
+			os.MkdirAll(opts.Path+"/"+utils.RemoveStarliSpecsConfigPathForDir(path, opts.Template), 0755)
 		}
 
 		if strings.HasSuffix(path, ".tmpl") {
@@ -180,7 +181,38 @@ func createProject(opts CreateOptions, templates []string) error {
 				return utils.Error("Failed to parse template")
 			}
 
-			parsedTemplate.Execute(os.Stdout, templateDynamicData)
+			var buf bytes.Buffer
+
+			parsedTemplate.Execute(&buf, templateDynamicData)
+
+			executedFileContent := buf.String()
+
+			fmt.Println(executedFileContent)
+
+			filePath := opts.Path + "/" + utils.RemoveStarliSpecsConfigPathForFile(path, opts.Template)
+
+			fmt.Println(filePath)
+
+			f, err := os.Create(filePath)
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return utils.Error("Failed to write file")
+			}
+
+			defer f.Close()
+
+			n, err := f.WriteString(executedFileContent)
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return utils.Error("Failed to write file")
+			}
+
+			fmt.Println("Wrote", n, "bytes")
+
+			utils.Success("Created file")
+
 		} else if strings.HasSuffix(path, "starli.json") {
 			fmt.Print(path)
 			fmt.Print(" Is starli config file")
